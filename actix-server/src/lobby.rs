@@ -6,16 +6,43 @@ use uuid::Uuid;
 
 type Socket = Recipient<WsMessage>;
 
+struct Room {
+    name: String,
+    users: HashSet<Uuid>,
+}
+impl Default for Room {
+    fn default() -> Self {
+        Self { 
+            name: String::new(),
+            users: HashSet::new() 
+        }
+    }
+}
+
+impl Room {
+    fn new(name: String) -> Self {
+        Self {
+            name,
+            users: HashSet::new()
+        }
+    }
+}
+
 pub struct Lobby {
     sessions: HashMap<Uuid, Socket>, //self id to self
-    rooms: HashMap<Uuid, HashSet<Uuid>>,      //room id  to list of users id
+    rooms: HashMap<Uuid, Room>,      //room id  to list of users id
 }
 
 impl Default for Lobby {
-    fn default() -> Lobby {
-        Lobby {
+    fn default() -> Self {
+        let mut rooms = HashMap::new();
+        let main_uuid = Uuid::new_v4();
+        let main_room = Room::new(String::from("Main"));
+        rooms.insert(main_uuid, main_room);
+
+        Self {
             sessions: HashMap::new(),
-            rooms: HashMap::new(),
+            rooms,
         }
     }
 }
@@ -29,9 +56,9 @@ impl Lobby {
             println!("attempting to send message but couldn't find user id.");
         }
     }
-    pub fn get_rooms(&self) -> Vec<String> {
-        let rooms : Vec<String> = self.rooms.iter().map(|(k,v)| -> String {
-            k.to_string()
+    fn get_rooms(&self) -> Vec<String> {
+        let rooms : Vec<String> = self.rooms.iter().map(|(k, v)| -> String {
+            format!("{} {}", k.to_string(), v.name.to_string())
         }).collect();
         rooms
     }
@@ -39,6 +66,8 @@ impl Lobby {
 
 impl Actor for Lobby {
     type Context = Context<Self>;
+
+
 }
 
 impl Handler<ClientRequestRoomUUid> for Lobby {
@@ -57,12 +86,13 @@ impl Handler<Disconnect> for Lobby {
             self.rooms
                 .get(&msg.room_id)
                 .unwrap()
+                .users
                 .iter()
                 .filter(|conn_id| *conn_id.to_owned() != msg.id)
                 .for_each(|user_id| self.send_message(&format!("{} disconnected.", &msg.id), user_id));
             if let Some(lobby) = self.rooms.get_mut(&msg.room_id) {
-                if lobby.len() > 1 {
-                    lobby.remove(&msg.id);
+                if lobby.users.len() > 1 {
+                    lobby.users.remove(&msg.id);
                 } else {
                     //only one in the lobby, remove it entirely
                     self.rooms.remove(&msg.room_id);
@@ -78,12 +108,13 @@ impl Handler<Connect> for Lobby {
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
         self.rooms
             .entry(msg.lobby_id)
-            .or_insert_with(HashSet::new).insert(msg.self_id);
+            .or_insert_with(Room::default).users.insert(msg.self_id);
 
         self
             .rooms
             .get(&msg.lobby_id)
             .unwrap()
+            .users
             .iter()
             .filter(|conn_id| *conn_id.to_owned() != msg.self_id)
             .for_each(|conn_id| self.send_message(&format!("{} just joined!", msg.self_id), conn_id));
@@ -106,7 +137,7 @@ impl Handler<ClientActorMessage> for Lobby {
                 self.send_message(&msg.msg, &Uuid::parse_str(id_to).unwrap());
             }
         } else {
-            self.rooms.get(&msg.room_id).unwrap().iter().for_each(|client| self.send_message(&msg.msg, client));
+            self.rooms.get(&msg.room_id).unwrap().users.iter().for_each(|client| self.send_message(&msg.msg, client));
         }
     }
 }
