@@ -2,11 +2,23 @@
 import {useParams} from "react-router-dom"
 import {useState, useEffect} from "react"
 import styles from './ChatRoomPage.module.css'
+import axios from "axios";
 function ChatRoomPage() {
     let {name, uuid} = useParams()
-    
+
+    let [webSocket, setWebSocket] = useState(null);
     let inputBox = null
     let messageEnd = null
+
+    useEffect( () => {
+        const {location} = window
+        const proto = location.protocol.startsWith("https") ? "wss" : "ws"
+        const wsUri = `${proto}://127.0.0.1:8080/api/${uuid}`
+        //setWebSocket(new WebSocket(`ws://http://127.0.0.1:8080/api/${uuid}`))
+        const ws = new WebSocket(wsUri)
+        setWebSocket(ws)
+        console.log("Successfuly established web socket")
+    }, [uuid])
     
     let session = null; // TODO: verify user login
 

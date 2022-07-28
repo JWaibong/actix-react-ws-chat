@@ -12,6 +12,7 @@ pub async fn start_connection(
     group_id: Path<Uuid>,
     srv: Data<Addr<Lobby>>,
 ) -> Result<HttpResponse, Error> {
+    println!("This function was called");
     let ws = WsConn::new(
         group_id.into_inner(),
         srv.get_ref().clone(),

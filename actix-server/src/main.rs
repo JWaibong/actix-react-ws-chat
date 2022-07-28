@@ -2,6 +2,7 @@ mod ws;
 mod lobby;
 
 mod routes;
+use actix_cors::Cors;
 use lobby::Lobby;
 mod messages;
 mod start_connection;
@@ -18,9 +19,7 @@ async fn main() -> std::io::Result<()> {
     let chat_server = Lobby::default().start(); //create and spin up a lobby
 
     HttpServer::new(move || {
-        //let cors = Cors::permissive();
-            //default()
-            //.allowed_origin("http://localhost:3000");
+        let cors = Cors::permissive();//default().allowed_origin("http://localhost:3000");
         App::new() //register the lobby
             .app_data(web::Data::new(chat_server.clone()))
             //register our route. rename with "as" import or naming conflict
