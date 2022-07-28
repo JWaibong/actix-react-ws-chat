@@ -1,3 +1,4 @@
 actix-react-client/node_modules
 actix-server/node_modules
 actix-server/target
+actix-server/README.md

@@ -7,7 +7,7 @@ function App() {
   let [data, setData] = useState(null)
 
   useEffect( () => {
-    axios.get('/api/hello')
+    axios.get('/api/current_rooms')
       .then( res => {
         console.log(res)
         setData(res.data)

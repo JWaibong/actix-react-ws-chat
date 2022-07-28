@@ -26,7 +26,8 @@ async fn main() -> std::io::Result<()> {
             .service(start_connection_route) //register our route. rename with "as" import or naming conflict
             .service(
                 web::scope("/api")
-                    .service(routes::hello)    
+                    .service(routes::hello) 
+                    .service(routes::current_rooms)   
                     //.route("/hello", web::get().to(hello)), // same way to do without macro
             )
     })

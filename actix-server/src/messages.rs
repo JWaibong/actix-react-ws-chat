@@ -27,3 +27,8 @@ pub struct ClientActorMessage {
     pub msg: String,
     pub room_id: Uuid
 }
+
+#[derive(Message)]
+#[rtype(result = "Vec<String>")]
+pub struct ClientRequestRoomUUid {
+}

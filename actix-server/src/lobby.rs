@@ -1,4 +1,4 @@
-use crate::messages::{ClientActorMessage, Connect, Disconnect, WsMessage};
+use crate::messages::{ClientActorMessage, Connect, Disconnect, WsMessage, ClientRequestRoomUUid};
 use actix::prelude::{Actor, Context, Handler, Recipient};
 use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
@@ -29,10 +29,24 @@ impl Lobby {
             println!("attempting to send message but couldn't find user id.");
         }
     }
+    pub fn get_rooms(&self) -> Vec<String> {
+        let rooms : Vec<String> = self.rooms.iter().map(|(k,v)| -> String {
+            k.to_string()
+        }).collect();
+        rooms
+    }
 }
 
 impl Actor for Lobby {
     type Context = Context<Self>;
+}
+
+impl Handler<ClientRequestRoomUUid> for Lobby {
+    type Result =  Vec<String>;
+
+    fn handle(&mut self, msg: ClientRequestRoomUUid, _: &mut Context<Self>) -> Self::Result {
+        self.get_rooms()
+    }
 }
 
 impl Handler<Disconnect> for Lobby {
