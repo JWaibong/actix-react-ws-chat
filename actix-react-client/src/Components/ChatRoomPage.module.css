@@ -1,5 +1,6 @@
 .chatHolder {
-    background-color: red;
+    margin: auto;
+    background-color: #c60f11;
     display: flex;
     flex-flow: column wrap;
     justify-content: space-evenly;
@@ -9,12 +10,16 @@
 }
 .chatText {
     border-radius: 20px;
-    width : 600px;
-    height : 300px;
-    background-color: black; 
+    width : 75%;
+    height : 30%;
+    background-color: #95cadc;
     overflow-y: scroll;
     scroll-behavior: smooth;
     align-self: center;
+    border-style: solid;
+    border-width: 2em;
+    border-color: #4f7ca0
+
 }
 .chatText::-webkit-scrollbar {
     display:none;
